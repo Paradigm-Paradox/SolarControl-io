@@ -1,5 +1,9 @@
 # SolarControl-io
 
+<p align="center">
+  <img src="docs/assets/logo.png" alt="SolarControl-io Logo" width="180">
+</p>
+
 [![GitHub Release](https://img.shields.io/badge/release-v0.1.0-blue.svg)](https://github.com/Paradigm-Paradox/SolarControl-io)
 [![Home Assistant Add-on](https://img.shields.io/badge/home--assistant-add--on-blue.svg?logo=home-assistant)](https://www.home-assistant.io/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)

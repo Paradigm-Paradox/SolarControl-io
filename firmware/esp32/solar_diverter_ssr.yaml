@@ -12,7 +12,9 @@ esp32:
   framework:
     type: esp-idf
 
+# Native API with explicit ID for watchdog connection checking
 api:
+  id: api_server
   encryption:
     key: !secret api_encryption_key
 
@@ -35,6 +37,7 @@ one_wire:
 sensor:
   - platform: dallas_temp
     one_wire_id: dallas_bus
+    index: 0
     name: "Tank Water Temperature"
     id: tank_temp
     device_class: temperature
@@ -47,19 +50,20 @@ sensor:
     device_class: power
     unit_of_measurement: "W"
     accuracy_decimals: 0
+    update_interval: 5s
     lambda: |-
-      // Calculate estimated active power based on PWM duty cycle and 3000W heating element
+      // Estimated power based on duty cycle and 3000W heating element
       return id(heater_output).level * 3000.0;
 
-# PWM / Proportional Solid State Relay Output (Zero-crossing SSR / Triac)
+# Slow PWM for Zero-Crossing Solid State Relays (burst / time-proportional firing)
 output:
-  - platform: ledc
+  - platform: slow_pwm
     pin: GPIO19
     id: heater_output
-    frequency: "100Hz"
+    period: 3s
 
 number:
-  # Controllable by SolarControl-io Load Diverter Engine
+  # Controllable by SolarControl-io Load Diverter Engine (0% - 100%)
   - platform: template
     name: "Diverter Target Power %"
     id: diverter_target_pct
@@ -71,8 +75,8 @@ number:
     set_action:
       - lambda: |-
           // Thermal safety lockout: Tank temperature limit 75°C
-          if (id(tank_temp).state >= 75.0) {
-            ESP_LOGW("DIVERTER", "Tank reached max safe temp! Locking out heater.");
+          if (id(tank_temp).has_state() && id(tank_temp).state >= 75.0) {
+            ESP_LOGW("DIVERTER", "Tank reached max safe temp (>=75°C)! Locking out heater.");
             id(heater_output).set_level(0.0);
             return;
           }

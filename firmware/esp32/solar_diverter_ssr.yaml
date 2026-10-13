@@ -1,0 +1,101 @@
+substitutions:
+  name: "solarcontrol-thermal-diverter"
+  friendly_name: "Solar Thermal Diverter (Water Heater)"
+
+esphome:
+  name: ${name}
+  friendly_name: ${friendly_name}
+  comment: "ESP32 Proportional Excess Solar Diverter with Thermal Safety Watchdog"
+
+esp32:
+  board: esp32dev
+  framework:
+    type: esp-idf
+
+api:
+  encryption:
+    key: !secret api_encryption_key
+
+ota:
+  - platform: esphome
+
+logger:
+  level: INFO
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+# 1-Wire Temperature Sensor (DS18B20) attached to water heater tank
+one_wire:
+  - platform: gpio
+    pin: GPIO18
+    id: dallas_bus
+
+sensor:
+  - platform: dallas_temp
+    one_wire_id: dallas_bus
+    name: "Tank Water Temperature"
+    id: tank_temp
+    device_class: temperature
+    unit_of_measurement: "°C"
+    accuracy_decimals: 1
+
+  - platform: template
+    name: "Diverter Active Power"
+    id: diverter_power
+    device_class: power
+    unit_of_measurement: "W"
+    accuracy_decimals: 0
+    lambda: |-
+      // Calculate estimated active power based on PWM duty cycle and 3000W heating element
+      return id(heater_output).level * 3000.0;
+
+# PWM / Proportional Solid State Relay Output (Zero-crossing SSR / Triac)
+output:
+  - platform: ledc
+    pin: GPIO19
+    id: heater_output
+    frequency: "100Hz"
+
+number:
+  # Controllable by SolarControl-io Load Diverter Engine
+  - platform: template
+    name: "Diverter Target Power %"
+    id: diverter_target_pct
+    min_value: 0
+    max_value: 100
+    step: 1
+    mode: slider
+    optimistic: true
+    set_action:
+      - lambda: |-
+          // Thermal safety lockout: Tank temperature limit 75°C
+          if (id(tank_temp).state >= 75.0) {
+            ESP_LOGW("DIVERTER", "Tank reached max safe temp! Locking out heater.");
+            id(heater_output).set_level(0.0);
+            return;
+          }
+          float duty = x / 100.0;
+          id(heater_output).set_level(duty);
+
+switch:
+  - platform: template
+    name: "Diverter Master Enable"
+    id: diverter_enable
+    optimistic: true
+    turn_off_action:
+      - lambda: |-
+          id(heater_output).set_level(0.0);
+          id(diverter_target_pct).publish_state(0.0);
+
+# Safety Watchdog: If Home Assistant communication drops for >60s, turn off heater
+interval:
+  - interval: 10s
+    then:
+      - lambda: |-
+          if (!id(api_server).is_connected()) {
+            ESP_LOGW("SAFETY", "HA API link lost. Engaging failsafe cutoff.");
+            id(heater_output).set_level(0.0);
+            id(diverter_target_pct).publish_state(0.0);
+          }

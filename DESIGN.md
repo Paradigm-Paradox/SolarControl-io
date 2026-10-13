@@ -3,7 +3,7 @@
 ## Overview
 **SolarControl-io** is an edge-native Home Assistant Add-on providing automated energy orchestration, battery storage (BESS) optimization, Time-of-Use (TOU) arbitrage, excess solar diversion (thermal/EV), and dynamic tariff protection.
 
-For full architectural details, mathematical models, and subsystem specifications, see [docs/DESIGN.md](file:///mnt/data/HomeAssitant-Addon/docs/DESIGN.md).
+For full architectural details, mathematical models, and subsystem specifications, see [docs/DESIGN.md](docs/DESIGN.md).
 
 ## Core Capabilities
 1. **Real-time Energy Flow & Power Balance**:
@@ -25,7 +25,13 @@ For full architectural details, mathematical models, and subsystem specification
    - Inverter curtailment or instant diversion during negative feed-in tariff conditions.
    - Zero-export and utility-mandated export limit enforcement.
 
-5. **Integrated Ingress Web Dashboard**:
+5. **ESP32 Distributed Edge Microcontrollers**:
+   - Turnkey ESPHome firmware configurations for low-cost, energy-efficient ESP32 modules.
+   - **Networking**: High-reliability Wired Ethernet (WT32-ETH01, Olimex POE), Wi-Fi, and Bluetooth (BLE).
+   - **Bridges**: RS485 Modbus RTU inverter bridges, CAN Bus & BLE battery BMS monitors, and zero-cross SSR proportional water heater diverters.
+   - Autonomous hardware fail-safe watchdogs.
+
+6. **Integrated Ingress Web Dashboard**:
    - Animated SVG/Canvas power flow diagram embedded into Home Assistant's sidebar.
    - One-click mode switching: `Auto Optimizer`, `Self Consumption`, `TOU Arbitrage`, `Backup Reserve`, `Manual`.
    - Real-time savings and self-sufficiency indicators.
@@ -39,4 +45,8 @@ For full architectural details, mathematical models, and subsystem specification
   - `run.sh` — Add-on startup entrypoint with bashio logging.
   - `app/` — Core Python FastAPI backend and responsive Ingress web dashboard.
     - `engine/` — Power flow balance, battery dispatch, load diversion, and tariff optimizer.
+- `firmware/` — ESP32 edge microcontroller firmware configurations (ESPHome).
+  - `esp32/inverter_modbus_rs485.yaml` — Inverter RS485 Modbus bridge (Wi-Fi/Ethernet).
+  - `esp32/bms_can_ble_monitor.yaml` — Battery BMS monitor (CAN Bus & BLE).
+  - `esp32/solar_diverter_ssr.yaml` — Hot water heater proportional SSR diverter.
 - `docs/` — In-depth architectural specifications and user documentation.

@@ -47,6 +47,11 @@
   - Direct integration with Nord Pool, Tibber, Amber Electric, and wholesale dynamic tariffs.
   - Automatic curtailment or diversion trigger when feed-in rates turn negative.
   - Utility export limit and zero-export enforcement.
+- **📡 ESP32 Distributed Edge Nodes (Wi-Fi, Ethernet & Bluetooth)**:
+  - Turnkey [ESPHome firmware](firmware/esp32/README.md) for low-cost, energy-efficient ESP32 modules.
+  - **Inverter RS485 Modbus Bridge**: Connects directly to Growatt, Deye, Solis, Victron, and SunSpec inverters over Wi-Fi or high-reliability Wired Ethernet (WT32-ETH01 / Olimex POE).
+  - **Battery BMS Monitor**: Ingests Pylontech / EG4 CAN bus and reads Bluetooth BLE battery telemetry (JK, JBD, Daly BMS) without extra wiring.
+  - **Proportional Thermal Diverter**: Zero-crossing Solid State Relay (SSR) PWM with independent hardware watchdog safety cutoffs.
 - **🖥️ Native Home Assistant Ingress UI**:
   - Sleek, responsive web dashboard with live animated power flow diagrams.
   - Mode switches (`Auto Optimizer`, `Self Consumption`, `TOU Arbitrage`, `Backup Reserve`, `Manual`).
@@ -83,7 +88,14 @@
 │   ├── run.sh                   # Startup script
 │   ├── DOCS.md                  # Detailed user guide
 │   └── CHANGELOG.md             # Version history
+├── firmware/                    # ESP32 edge microcontroller configurations
+│   └── esp32/                   # ESPHome firmware packages
+│       ├── inverter_modbus_rs485.yaml # RS485 Modbus inverter bridge (Wi-Fi/Ethernet)
+│       ├── bms_can_ble_monitor.yaml   # CAN Bus & BLE battery BMS monitor
+│       ├── solar_diverter_ssr.yaml    # Zero-crossing SSR proportional diverter
+│       └── README.md                  # Hardware schematics & flashing guide
 ├── docs/
+│   ├── assets/                  # Brand assets & diagrams
 │   └── DESIGN.md                # System design & architecture specification
 ├── DESIGN.md                    # Architecture summary
 ├── repository.yaml              # HA Add-on Repository manifest

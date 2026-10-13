@@ -21,6 +21,6 @@ COPY app /app/app
 COPY run.sh /run.sh
 RUN chmod a+x /run.sh
 
-EXPOSE 8099
+EXPOSE 8096
 
 CMD [ "/run.sh" ]
